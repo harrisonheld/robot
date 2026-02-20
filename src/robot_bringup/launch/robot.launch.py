@@ -3,7 +3,8 @@
 Starts:
 - Gazebo with the rc_car_world scene.
 - robot_state_publisher with the xacro-processed URDF.
-- The filtering_and_perception node.
+- The state_estimation node.
+- The perception node.
 - The planning node.
 - The driver node.
 - (Optional) RViz2 for visualisation.
@@ -108,10 +109,18 @@ def generate_launch_description():
     # ------------------------------------------------------------------ #
     # Stack nodes                                                          #
     # ------------------------------------------------------------------ #
-    filtering_and_perception_node = Node(
-        package='filtering_and_perception',
-        executable='filtering_and_perception_node',
-        name='filtering_and_perception_node',
+    state_estimation_node = Node(
+        package='state_estimation',
+        executable='state_estimation_node',
+        name='state_estimation_node',
+        output='screen',
+        parameters=[{'use_sim_time': use_sim_time}],
+    )
+
+    perception_node = Node(
+        package='perception',
+        executable='perception_node',
+        name='perception_node',
         output='screen',
         parameters=[{'use_sim_time': use_sim_time}],
     )
@@ -151,7 +160,8 @@ def generate_launch_description():
         gazebo,
         robot_state_publisher,
         spawn_entity,
-        filtering_and_perception_node,
+        state_estimation_node,
+        perception_node,
         planning_node,
         driver_node,
         rviz2_node,

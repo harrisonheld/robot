@@ -1,4 +1,4 @@
-"""Unit tests for the filtering and perception node."""
+"""Unit tests for the perception node."""
 
 # Copyright (c) 2024 Maintainer
 #
@@ -10,7 +10,7 @@ import pytest
 
 def _find_closest_obstacle(ranges, angle_min, angle_increment,
                             range_min, range_max, threshold):
-    """Replicate obstacle detection logic from FilteringAndPerceptionNode."""
+    """Replicate obstacle detection logic from PerceptionNode."""
     min_range = float('inf')
     min_index = -1
 
@@ -45,13 +45,13 @@ class TestObstacleDetection:
     def test_obstacle_within_threshold(self):
         """A range reading below threshold should be detected."""
         ranges = self._make_empty_scan()
-        ranges[0] = 0.5  # Obstacle straight ahead at 0.5 m
+        ranges[0] = 0.5
         result = _find_closest_obstacle(
             ranges, -math.pi, 2 * math.pi / 360,
             0.12, 10.0, threshold=1.0
         )
         assert result is not None
-        distance, bearing = result
+        distance, _ = result
         assert distance == pytest.approx(0.5)
 
     def test_obstacle_bearing_correct(self):
@@ -72,7 +72,7 @@ class TestObstacleDetection:
         """When multiple obstacles present, the closest is returned."""
         ranges = self._make_empty_scan()
         ranges[10] = 0.8
-        ranges[50] = 0.4  # This is closer
+        ranges[50] = 0.4
         result = _find_closest_obstacle(
             ranges, -math.pi, 2 * math.pi / 360,
             0.12, 10.0, threshold=1.0

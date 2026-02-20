@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'filtering_and_perception'
+package_name = 'perception'
 
 setup(
     name=package_name,
@@ -15,13 +15,12 @@ setup(
     zip_safe=True,
     maintainer='Maintainer',
     maintainer_email='user@example.com',
-    description='Filtering and perception package for the RC car.',
+    description='Perception package for the RC car.',
     license='MIT',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'filtering_and_perception_node = '
-            'filtering_and_perception.filtering_and_perception_node:main',
+            'perception_node = perception.perception_node:main',
         ],
     },
 )
