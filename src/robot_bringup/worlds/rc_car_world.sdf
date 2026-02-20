@@ -10,16 +10,23 @@
 <sdf version="1.6">
   <world name="rc_car_world">
 
+    <!-- Gazebo Sim systems required for runtime services/topics -->
+    <plugin
+      filename="gz-sim-physics-system"
+      name="gz::sim::systems::Physics" />
+    <plugin
+      filename="gz-sim-user-commands-system"
+      name="gz::sim::systems::UserCommands" />
+    <plugin
+      filename="gz-sim-scene-broadcaster-system"
+      name="gz::sim::systems::SceneBroadcaster" />
+
     <!-- Physics -->
     <physics name="default" type="ode">
       <max_step_size>0.001</max_step_size>
       <real_time_factor>1</real_time_factor>
       <real_time_update_rate>1000</real_time_update_rate>
     </physics>
-
-    <!-- Plugins -->
-    <plugin name="gazebo_ros_factory"
-            filename="libgazebo_ros_factory.so"/>
 
     <!-- Lighting -->
     <light name="sun" type="directional">

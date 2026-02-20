@@ -1,38 +1,5 @@
 # robot
-
 A ROS2 self-driving RC car written in Python, with Gazebo simulation.
-
-## Architecture
-
-The autonomy stack is split into four layers that communicate over ROS2 topics:
-
-```
-         /imu (Gazebo)                    /scan (Gazebo)
-              │                                │
-┌─────────────▼─────────────┐  ┌──────────────▼──────────────┐
-│      State Estimation     │  │         Perception           │
-│  Integrates IMU → heading │  │  LiDAR scan → obstacles      │
-│  Subscribes: /imu         │  │  Subscribes: /scan           │
-│  Publishes:               │  │  Publishes:                  │
-│    /odometry/filtered     │  │    /obstacles                │
-└───────────────────────────┘  └──────────────┬──────────────┘
-                                               │ /obstacles
-                               ┌──────────────▼──────────────┐
-                               │           Planning           │
-                               │  Reactive obstacle avoidance │
-                               │  Subscribes: /obstacles      │
-                               │  Publishes:  /ackermann_cmd  │
-                               └──────────────┬──────────────┘
-                                               │ /ackermann_cmd
-                               ┌──────────────▼──────────────┐
-                               │            Driver            │
-                               │  Ackermann → Twist           │
-                               │  Subscribes: /ackermann_cmd  │
-                               │  Publishes:  /cmd_vel        │
-                               └──────────────┬──────────────┘
-                                               │ /cmd_vel
-                                        Actuators (Gazebo)
-```
 
 ### ROS2 Packages
 
@@ -45,10 +12,9 @@ The autonomy stack is split into four layers that communicate over ROS2 topics:
 | `robot_bringup` | Launch files, URDF robot description (xacro), Gazebo world, and RViz2 configuration. |
 
 ## Prerequisites
-
-- Ubuntu 24.04 (Noble Numbat)
-- [ROS2 Jazzy](https://docs.ros.org/en/jazzy/Installation.html)
-- [Gazebo](https://gazebosim.org/) (classic, version ≥ 11)
+- Ubuntu 24.04 (Noble)
+- ROS2 (Jazzy)
+- Gazebo (Harmonic)
 - Python 3.12+
 - `ros-jazzy-ackermann-msgs`
 - `ros-jazzy-gazebo-ros-pkgs`
@@ -58,7 +24,6 @@ The autonomy stack is split into four layers that communicate over ROS2 topics:
 
 ```bash
 # From the workspace root
-cd /path/to/robot
 colcon build --symlink-install
 source install/setup.bash
 ```
@@ -66,6 +31,7 @@ source install/setup.bash
 ## Running the Simulation
 
 ```bash
+source /opt/ros/jazzy/setup.bash
 ros2 launch robot_bringup robot.launch.py
 ```
 

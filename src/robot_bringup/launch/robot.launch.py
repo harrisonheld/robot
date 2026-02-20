@@ -28,7 +28,6 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
-    ExecuteProcess,
     IncludeLaunchDescription,
 )
 from launch.conditions import IfCondition
@@ -39,6 +38,7 @@ from launch.substitutions import (
     PathJoinSubstitution,
 )
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
 
 
@@ -70,10 +70,18 @@ def generate_launch_description():
     # ------------------------------------------------------------------ #
     # Gazebo                                                               #
     # ------------------------------------------------------------------ #
-    gazebo = ExecuteProcess(
-        cmd=['gazebo', '--verbose', world_file, '-s', 'libgazebo_ros_init.so',
-             '-s', 'libgazebo_ros_factory.so'],
-        output='screen',
+    gazebo = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution([
+                FindPackageShare('ros_gz_sim'),
+                'launch',
+                'gz_sim.launch.py',
+            ])
+        ),
+        launch_arguments={
+            'gz_args': ['-r ', world_file],
+            'on_exit_shutdown': 'true',
+        }.items(),
     )
 
     # ------------------------------------------------------------------ #
@@ -85,7 +93,10 @@ def generate_launch_description():
         name='robot_state_publisher',
         output='screen',
         parameters=[{
-            'robot_description': Command(['xacro ', urdf_file]),
+            'robot_description': ParameterValue(
+                Command(['xacro ', urdf_file]),
+                value_type=str,
+            ),
             'use_sim_time': use_sim_time,
         }],
     )
@@ -94,14 +105,31 @@ def generate_launch_description():
     # Spawn the robot in Gazebo                                            #
     # ------------------------------------------------------------------ #
     spawn_entity = Node(
-        package='gazebo_ros',
-        executable='spawn_entity.py',
+        package='ros_gz_sim',
+        executable='create',
         arguments=[
             '-topic', '/robot_description',
-            '-entity', 'rc_car',
+            '-name', 'rc_car',
+            '-world', 'rc_car_world',
             '-x', '0.0',
             '-y', '0.0',
             '-z', '0.1',
+        ],
+        output='screen',
+    )
+
+    # ------------------------------------------------------------------ #
+    # Gazebo <-> ROS topic bridge                                         #
+    # ------------------------------------------------------------------ #
+    ros_gz_bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=[
+            '/clock@rosgraph_msgs/msg/Clock@gz.msgs.Clock',
+            '/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+            '/odom@nav_msgs/msg/Odometry@gz.msgs.Odometry',
+            '/scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan',
+            '/imu@sensor_msgs/msg/Imu@gz.msgs.IMU',
         ],
         output='screen',
     )
@@ -160,6 +188,7 @@ def generate_launch_description():
         gazebo,
         robot_state_publisher,
         spawn_entity,
+        ros_gz_bridge,
         state_estimation_node,
         perception_node,
         planning_node,
