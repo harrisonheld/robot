@@ -125,12 +125,12 @@ def generate_launch_description():
         package='ros_gz_bridge',
         executable='parameter_bridge',
         arguments=[
-            '/clock@rosgraph_msgs/msg/Clock@gz.msgs.Clock',
-            '/model/rc_carcmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-            '/odom@nav_msgs/msg/Odometry@gz.msgs.Odometry',
-            '/scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan',
-            '/imu@sensor_msgs/msg/Imu@gz.msgs.IMU',
-            '/camera/image_raw@sensor_msgs/msg/Image@gz.msgs.Image',
+            '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
+            '/model/rc_carcmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist',
+            '/odom@nav_msgs/msg/Odometry[gz.msgs.Odometry',
+            '/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',
+            '/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
+            '/camera/image_raw@sensor_msgs/msg/Image[gz.msgs.Image',
         ],
         remappings=[
             ('/model/rc_carcmd_vel', '/cmd_vel'),
