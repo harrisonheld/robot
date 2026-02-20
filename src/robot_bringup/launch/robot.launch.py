@@ -43,6 +43,16 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
+    # ------------------------------------------------------------------ #
+    # Static transform: base_link -> lidar_link                          #
+    # ------------------------------------------------------------------ #
+    static_tf_lidar = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_tf_lidar',
+        arguments=['0.18', '0', '0.13', '0', '0', '0', 'base_link', 'rc_car/base_link/lidar'],
+        output='screen',
+    )
     """Return the LaunchDescription for the RC car simulation stack."""
     bringup_pkg = get_package_share_directory('robot_bringup')
 
@@ -193,6 +203,7 @@ def generate_launch_description():
         robot_state_publisher,
         spawn_entity,
         ros_gz_bridge,
+        static_tf_lidar,
         state_estimation_node,
         perception_node,
         planning_node,
