@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # build
 #
 cd "$SCRIPT_DIR"
-colcon build --symlink-install
+colcon build
 
 #
 # run

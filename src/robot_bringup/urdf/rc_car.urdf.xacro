@@ -263,7 +263,7 @@
 
   <!-- 2-D LiDAR sensor (bridged with ros_gz_bridge) -->
   <gazebo reference="lidar_link">
-    <sensor name="lidar" type="ray">
+    <sensor name="lidar" type="gpu_lidar">
       <always_on>true</always_on>
       <visualize>true</visualize>
       <update_rate>10</update_rate>

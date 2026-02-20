@@ -70,7 +70,7 @@ class PerceptionNode(Node):
         obstacle_msg = Odometry()
         obstacle_msg.header = Header()
         obstacle_msg.header.stamp = self.get_clock().now().to_msg()
-        obstacle_msg.header.frame_id = 'base_link'
+        obstacle_msg.header.frame_id = 'lidar_link'
         # Encode distance as x, bearing as y for easy consumption downstream.
         obstacle_msg.pose.pose.position = Point(
             x=float(min_range), y=float(bearing), z=0.0
