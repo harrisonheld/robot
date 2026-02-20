@@ -126,11 +126,14 @@ def generate_launch_description():
         executable='parameter_bridge',
         arguments=[
             '/clock@rosgraph_msgs/msg/Clock@gz.msgs.Clock',
-            '/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+            '/model/rc_carcmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
             '/odom@nav_msgs/msg/Odometry@gz.msgs.Odometry',
             '/scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan',
             '/imu@sensor_msgs/msg/Imu@gz.msgs.IMU',
             '/camera/image_raw@sensor_msgs/msg/Image@gz.msgs.Image',
+        ],
+        remappings=[
+            ('/model/rc_carcmd_vel', '/cmd_vel'),
         ],
         output='screen',
     )

@@ -1,16 +1,6 @@
 # robot
 A ROS2 self-driving RC car written in Python, with Gazebo simulation.
 
-### ROS2 Packages
-
-| Package | Description |
-|---|---|
-| `driver` | Low-level actuator interface. Converts `AckermannDriveStamped` commands to `Twist` messages consumed by the Gazebo drive plugin. |
-| `state_estimation` | Integrates IMU gyroscope data to produce a filtered heading odometry estimate on `/odometry/filtered`. |
-| `perception` | Processes raw LiDAR scans to detect the closest obstacle and publishes its distance and bearing on `/obstacles`. |
-| `planning` | Reactive obstacle-avoidance planner that generates `AckermannDriveStamped` commands. |
-| `robot_bringup` | Launch files, URDF robot description (xacro), Gazebo world, and RViz2 configuration. |
-
 ## Prerequisites
 - Ubuntu 24.04 (Noble)
 - ROS2 (Jazzy)
@@ -21,16 +11,14 @@ A ROS2 self-driving RC car written in Python, with Gazebo simulation.
 - `ros-jazzy-xacro`
 
 ## Building
-
 ```bash
 # From the workspace root
 colcon build --symlink-install
-source install/setup.bash
 ```
 
 ## Running the Simulation
-
 ```bash
+source install/setup.bash
 source /opt/ros/jazzy/setup.bash
 ros2 launch robot_bringup robot.launch.py
 ```
@@ -48,26 +36,18 @@ Example – headless (no RViz2):
 ros2 launch robot_bringup robot.launch.py use_rviz:=false
 ```
 
-## Testing
+## Injecting Topics
+A `geometry_msgs/msg/Twist` is a command which has a translational velocity and rotational velocity.
+For a ground robot, we typically only use linear.x - how fast to move forward at, and angular.z, how much to rotate.
+```bash
+ros2 topic pub /cmd_vel geometry_msgs/msg/Twist \
+"{linear: {x: 0.5}, angular: {z: 0.2}}"
+```
 
-Unit tests cover the core logic of each layer and can be run without a full
-ROS2 installation:
-
+## Unit Tests
 ```bash
 python -m pytest src/driver/test/ \
                  src/state_estimation/test/ \
                  src/perception/test/ \
                  src/planning/test/ -v
 ```
-
-## Topic Map
-
-```
-Gazebo ──/imu───────────────► state_estimation_node ──/odometry/filtered──► (RViz2 / consumers)
-Gazebo ──/scan──────────────► perception_node ──/obstacles──► planning_node
-                                                                │
-                                                                └──/ackermann_cmd──► driver_node
-                                                                                      │
-                                                                                      └──/cmd_vel──► Gazebo
-```
-
