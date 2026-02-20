@@ -46,12 +46,13 @@ The autonomy stack is split into four layers that communicate over ROS2 topics:
 
 ## Prerequisites
 
-- [ROS2 Humble](https://docs.ros.org/en/humble/Installation.html) (or later)
+- Ubuntu 24.04 (Noble Numbat)
+- [ROS2 Jazzy](https://docs.ros.org/en/jazzy/Installation.html)
 - [Gazebo](https://gazebosim.org/) (classic, version ≥ 11)
-- Python 3.10+
-- `ros-humble-ackermann-msgs`
-- `ros-humble-gazebo-ros-pkgs`
-- `ros-humble-xacro`
+- Python 3.12+
+- `ros-jazzy-ackermann-msgs`
+- `ros-jazzy-gazebo-ros-pkgs`
+- `ros-jazzy-xacro`
 
 ## Building
 
