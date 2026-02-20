@@ -42,6 +42,17 @@ Visualization Manager:
       Topic:
         Value: /odometry/filtered
       Value: true
+    - Class: rviz_default_plugins/Image
+      Depth: 5
+      Durability Policy: Volatile
+      Enabled: true
+      History Policy: Keep Last
+      Name: CameraImage
+      Reliability Policy: Best Effort
+      Topic:
+        Value: /camera/image_raw
+      Transport Hint: raw
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

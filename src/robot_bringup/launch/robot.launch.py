@@ -130,6 +130,7 @@ def generate_launch_description():
             '/odom@nav_msgs/msg/Odometry@gz.msgs.Odometry',
             '/scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan',
             '/imu@sensor_msgs/msg/Imu@gz.msgs.IMU',
+            '/camera/image_raw@sensor_msgs/msg/Image@gz.msgs.Image',
         ],
         output='screen',
     )
