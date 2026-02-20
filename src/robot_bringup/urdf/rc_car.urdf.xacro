@@ -72,7 +72,7 @@
       <!-- Wheels spin about their own Y axis; shift by 90° so the cylinder
            axis aligns with the vehicle lateral axis. -->
       <origin xyz="${x} ${y} 0" rpy="${pi/2} 0 0"/>
-      <axis xyz="0 0 1"/>
+      <axis xyz="0 0 -1"/>
     </joint>
   </xacro:macro>
 
@@ -116,7 +116,7 @@
       <parent link="${name}_steering_link"/>
       <child  link="${name}"/>
       <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
-      <axis xyz="0 0 1"/>
+      <axis xyz="0 0 -1"/>
     </joint>
   </xacro:macro>
 
