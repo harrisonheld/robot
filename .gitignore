@@ -1,0 +1,18 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# pytest cache
+.pytest_cache/
+
+# ROS2 build artifacts
+build/
+install/
+log/
+
+# Editor
+.vscode/
+*.swp
+*.swo
