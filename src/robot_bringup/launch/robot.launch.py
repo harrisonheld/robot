@@ -50,7 +50,7 @@ def generate_launch_description():
         package='tf2_ros',
         executable='static_transform_publisher',
         name='static_tf_lidar',
-        arguments=['0.18', '0', '0.13', '0', '0', '0', 'base_link', 'rc_car/base_link/lidar'],
+        arguments=['0.18', '0', '0.16', '0', '0', '0', 'base_link', 'rc_car/base_link/lidar'],
         output='screen',
     )
     """Return the LaunchDescription for the RC car simulation stack."""
