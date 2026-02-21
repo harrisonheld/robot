@@ -41,7 +41,7 @@ class PlanningNode(Node):
         # Cruise speed (m/s) when no obstacle is present.
         self.declare_parameter('cruise_speed', 1.0)
         # Distance at which obstacle avoidance kicks in (m).
-        self.declare_parameter('safety_distance', 3.0)
+        self.declare_parameter('safety_distance', 2.0)
         # Maximum steering angle used during avoidance (rad).
         self.declare_parameter('max_avoidance_steering', 0.4)
         # Timer period (s) for the control loop.
@@ -67,13 +67,13 @@ class PlanningNode(Node):
         """Store the latest obstacle detection."""
         distance = msg.point.x
         bearing = msg.point.y
+        self.get_logger().info(f"Received obstacle: distance={distance:.2f} m, bearing={math.degrees(bearing):.1f} deg")
         self._latest_obstacle = (distance, bearing)
 
     def _control_loop(self) -> None:
         """Publish a tank drive command on every timer tick."""
         cruise_speed = self.get_parameter('cruise_speed').value
         safety_distance = self.get_parameter('safety_distance').value
-        max_steering = self.get_parameter('max_avoidance_steering').value
 
         left_vel = cruise_speed
         right_vel = cruise_speed
@@ -82,18 +82,21 @@ class PlanningNode(Node):
             distance, bearing = self._latest_obstacle
             if distance < safety_distance and distance > 0.0:
                 proximity = 1.0 - (distance / safety_distance)
-                # If obstacle ahead, slow down and turn
                 if abs(bearing) < math.radians(20):
-                    left_vel = 0.0
-                    right_vel = 0.0
+                    # Obstacle ahead: spin in place (turn right)
+                    left_vel = -cruise_speed * proximity
+                    right_vel = cruise_speed * proximity
+                    self.get_logger().info(f"Obstacle ahead: spinning in place (left_vel={left_vel:.2f}, right_vel={right_vel:.2f})")
                 elif bearing > 0:
                     # Obstacle left: turn right
                     left_vel = cruise_speed * (1.0 - proximity)
                     right_vel = cruise_speed
+                    self.get_logger().info(f"Obstacle left: turning right (left_vel={left_vel:.2f}, right_vel={right_vel:.2f})")
                 else:
                     # Obstacle right: turn left
                     left_vel = cruise_speed
                     right_vel = cruise_speed * (1.0 - proximity)
+                    self.get_logger().info(f"Obstacle right: turning left (left_vel={left_vel:.2f}, right_vel={right_vel:.2f})")
 
             self._latest_obstacle = None
 

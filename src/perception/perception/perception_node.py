@@ -36,7 +36,7 @@ class PerceptionNode(Node):
         super().__init__('perception_node')
 
         # Obstacle detection threshold (m) – configurable via ROS parameter.
-        self.declare_parameter('obstacle_threshold', 1.0)
+        self.declare_parameter('obstacle_threshold', 2.0)
 
         self._obstacle_pub = self.create_publisher(
             PointStamped, '/obstacles', 10
