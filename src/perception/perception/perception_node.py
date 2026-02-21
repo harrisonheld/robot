@@ -41,9 +41,6 @@ class PerceptionNode(Node):
         self._obstacle_pub = self.create_publisher(
             PointStamped, '/obstacles', 10
         )
-        self._tank_cmd_pub = self.create_publisher(
-            Twist, '/tank_cmd', 10
-        )
 
         self._scan_sub = self.create_subscription(
             LaserScan, '/scan', self._scan_callback, 10
@@ -64,11 +61,6 @@ class PerceptionNode(Node):
                 min_index = i
 
         if min_index == -1 or min_range > threshold:
-            # No obstacle: drive forward
-            tank_cmd = Twist()
-            tank_cmd.linear.x = 1.0  # left wheel velocity
-            tank_cmd.linear.y = 1.0  # right wheel velocity
-            self._tank_cmd_pub.publish(tank_cmd)
             return
 
         bearing = msg.angle_min + min_index * msg.angle_increment
@@ -87,21 +79,7 @@ class PerceptionNode(Node):
             f'bearing={math.degrees(bearing):.1f} deg'
         )
 
-        # Obstacle detected: stop or turn
-        tank_cmd = Twist()
-        if abs(bearing) < math.radians(20):
-            # Obstacle ahead: stop
-            tank_cmd.linear.x = 0.0
-            tank_cmd.linear.y = 0.0
-        elif bearing > 0:
-            # Obstacle left: turn right
-            tank_cmd.linear.x = 0.5
-            tank_cmd.linear.y = 1.0
-        else:
-            # Obstacle right: turn left
-            tank_cmd.linear.x = 1.0
-            tank_cmd.linear.y = 0.5
-        self._tank_cmd_pub.publish(tank_cmd)
+        # ...existing code...
 
 
 def main(args=None):

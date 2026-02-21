@@ -18,7 +18,7 @@ import math
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import PointStamped
-from ackermann_msgs.msg import AckermannDriveStamped
+from geometry_msgs.msg import Twist
 
 
 class PlanningNode(Node):
@@ -31,15 +31,15 @@ class PlanningNode(Node):
 
     Publications
     ------------
-    /ackermann_cmd : ackermann_msgs/AckermannDriveStamped
-        Desired steering angle and speed sent to the driver layer.
+    /tank_cmd : geometry_msgs/Twist
+        Desired left and right wheel velocities sent to the driver layer.
     """
 
     def __init__(self):
         super().__init__('planning_node')
 
         # Cruise speed (m/s) when no obstacle is present.
-        self.declare_parameter('cruise_speed', 20.0)
+        self.declare_parameter('cruise_speed', 1.0)
         # Distance at which obstacle avoidance kicks in (m).
         self.declare_parameter('safety_distance', 3.0)
         # Maximum steering angle used during avoidance (rad).
@@ -48,7 +48,7 @@ class PlanningNode(Node):
         self.declare_parameter('control_period', 0.05)
 
         self._cmd_pub = self.create_publisher(
-            AckermannDriveStamped, '/ackermann_cmd', 10
+            Twist, '/tank_cmd', 10
         )
 
         self._obstacle_sub = self.create_subscription(
@@ -70,35 +70,36 @@ class PlanningNode(Node):
         self._latest_obstacle = (distance, bearing)
 
     def _control_loop(self) -> None:
-        """Publish a drive command on every timer tick."""
+        """Publish a tank drive command on every timer tick."""
         cruise_speed = self.get_parameter('cruise_speed').value
         safety_distance = self.get_parameter('safety_distance').value
         max_steering = self.get_parameter('max_avoidance_steering').value
 
-        speed = cruise_speed
-        steering_angle = 0.0
+        left_vel = cruise_speed
+        right_vel = cruise_speed
 
         if self._latest_obstacle is not None:
             distance, bearing = self._latest_obstacle
             if distance < safety_distance and distance > 0.0:
-                # Steer away proportionally to proximity; negative bearing →
-                # obstacle on the right → steer left (positive angle).
                 proximity = 1.0 - (distance / safety_distance)
-                steering_angle = -math.copysign(
-                    max_steering * proximity, bearing
-                )
-                # Slow down proportionally to proximity.
-                speed = cruise_speed * (distance / safety_distance)
+                # If obstacle ahead, slow down and turn
+                if abs(bearing) < math.radians(20):
+                    left_vel = 0.0
+                    right_vel = 0.0
+                elif bearing > 0:
+                    # Obstacle left: turn right
+                    left_vel = cruise_speed * (1.0 - proximity)
+                    right_vel = cruise_speed
+                else:
+                    # Obstacle right: turn left
+                    left_vel = cruise_speed
+                    right_vel = cruise_speed * (1.0 - proximity)
 
-            # Clear the obstacle after consuming it; fresh data will arrive
-            # on the next scan cycle.
             self._latest_obstacle = None
 
-        cmd = AckermannDriveStamped()
-        cmd.header.stamp = self.get_clock().now().to_msg()
-        cmd.header.frame_id = 'base_link'
-        cmd.drive.speed = float(speed)
-        cmd.drive.steering_angle = float(steering_angle)
+        cmd = Twist()
+        cmd.linear.x = float(left_vel)
+        cmd.linear.y = float(right_vel)
         self._cmd_pub.publish(cmd)
 
 
