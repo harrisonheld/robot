@@ -1,11 +1,6 @@
 <?xml version="1.0"?>
 <!--
   Simple Gazebo world for RC car simulation.
-
-  The world contains:
-  - A flat ground plane.
-  - Diffuse sunlight.
-  - Four rectangular obstacles arranged in the environment.
 -->
 <sdf version="1.6">
   <world name="rc_car_world">
@@ -67,7 +62,7 @@
           <geometry>
             <plane>
               <normal>0 0 1</normal>
-              <size>100 100</size>
+              <size>200 200</size>
             </plane>
           </geometry>
           <material>
@@ -94,66 +89,6 @@
             <script>
               <uri>file://media/materials/scripts/gazebo.material</uri>
               <name>Gazebo/Orange</name>
-            </script>
-          </material>
-        </visual>
-      </link>
-    </model>
-
-    <!-- Obstacle 2 – south wall -->
-    <model name="obstacle_2">
-      <static>true</static>
-      <pose>2.0 -2.5 0.25 0 0 0</pose>
-      <link name="link">
-        <collision name="collision">
-          <geometry><box><size>0.2 1.5 0.5</size></box></geometry>
-        </collision>
-        <visual name="visual">
-          <geometry><box><size>0.2 1.5 0.5</size></box></geometry>
-          <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Blue</name>
-            </script>
-          </material>
-        </visual>
-      </link>
-    </model>
-
-    <!-- Obstacle 3 – east pillar -->
-    <model name="obstacle_3">
-      <static>true</static>
-      <pose>6.0 1.5 0.5 0 0 0</pose>
-      <link name="link">
-        <collision name="collision">
-          <geometry><cylinder><radius>0.2</radius><length>1.0</length></cylinder></geometry>
-        </collision>
-        <visual name="visual">
-          <geometry><cylinder><radius>0.2</radius><length>1.0</length></cylinder></geometry>
-          <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Green</name>
-            </script>
-          </material>
-        </visual>
-      </link>
-    </model>
-
-    <!-- Obstacle 4 – west pillar -->
-    <model name="obstacle_4">
-      <static>true</static>
-      <pose>-2.0 1.0 0.5 0 0 0</pose>
-      <link name="link">
-        <collision name="collision">
-          <geometry><cylinder><radius>0.2</radius><length>1.0</length></cylinder></geometry>
-        </collision>
-        <visual name="visual">
-          <geometry><cylinder><radius>0.2</radius><length>1.0</length></cylinder></geometry>
-          <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Red</name>
             </script>
           </material>
         </visual>

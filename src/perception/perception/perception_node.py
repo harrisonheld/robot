@@ -13,9 +13,7 @@ import math
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
-from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Point
-from std_msgs.msg import Header
+from geometry_msgs.msg import PointStamped
 
 
 class PerceptionNode(Node):
@@ -28,9 +26,9 @@ class PerceptionNode(Node):
 
     Publications
     ------------
-    /obstacles : nav_msgs/Odometry
-        Closest detected obstacle encoded in the position field:
-        position.x = distance (m), position.y = bearing (rad).
+    /obstacles : nav_msgs/PointStamped
+        Closest detected obstacle encoded in the point field:
+        point.x = distance (m), point.y = bearing (rad).
         Only published when an obstacle is within the threshold distance.
     """
 
@@ -40,8 +38,9 @@ class PerceptionNode(Node):
         # Obstacle detection threshold (m) – configurable via ROS parameter.
         self.declare_parameter('obstacle_threshold', 1.0)
 
+        from geometry_msgs.msg import PointStamped
         self._obstacle_pub = self.create_publisher(
-            Odometry, '/obstacles', 10
+            PointStamped, '/obstacles', 10
         )
 
         self._scan_sub = self.create_subscription(
@@ -67,14 +66,13 @@ class PerceptionNode(Node):
 
         bearing = msg.angle_min + min_index * msg.angle_increment
 
-        obstacle_msg = Odometry()
-        obstacle_msg.header = Header()
+        obstacle_msg = PointStamped()
         obstacle_msg.header.stamp = self.get_clock().now().to_msg()
         obstacle_msg.header.frame_id = 'lidar_link'
         # Encode distance as x, bearing as y for easy consumption downstream.
-        obstacle_msg.pose.pose.position = Point(
-            x=float(min_range), y=float(bearing), z=0.0
-        )
+        obstacle_msg.point.x = float(min_range)
+        obstacle_msg.point.y = float(bearing)
+        obstacle_msg.point.z = 0.0
         self._obstacle_pub.publish(obstacle_msg)
 
         self.get_logger().debug(

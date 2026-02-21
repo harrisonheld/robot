@@ -17,7 +17,7 @@ import math
 
 import rclpy
 from rclpy.node import Node
-from nav_msgs.msg import Odometry
+from geometry_msgs.msg import PointStamped
 from ackermann_msgs.msg import AckermannDriveStamped
 
 
@@ -26,8 +26,8 @@ class PlanningNode(Node):
 
     Subscriptions
     -------------
-    /obstacles : nav_msgs/Odometry
-        Closest obstacle: position.x = distance (m), position.y = bearing (rad).
+    /obstacles : geometry_msgs/PointStamped
+        Closest obstacle: point.x = distance (m), point.y = bearing (rad).
 
     Publications
     ------------
@@ -52,7 +52,7 @@ class PlanningNode(Node):
         )
 
         self._obstacle_sub = self.create_subscription(
-            Odometry, '/obstacles', self._obstacle_callback, 10
+            PointStamped, '/obstacles', self._obstacle_callback, 10
         )
 
         # Latest obstacle info: (distance, bearing).  None = no obstacle.
@@ -63,10 +63,10 @@ class PlanningNode(Node):
 
         self.get_logger().info('Planning node started.')
 
-    def _obstacle_callback(self, msg: Odometry) -> None:
+    def _obstacle_callback(self, msg: PointStamped) -> None:
         """Store the latest obstacle detection."""
-        distance = msg.pose.pose.position.x
-        bearing = msg.pose.pose.position.y
+        distance = msg.point.x
+        bearing = msg.point.y
         self._latest_obstacle = (distance, bearing)
 
     def _control_loop(self) -> None:
