@@ -13,7 +13,7 @@ import math
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
-from geometry_msgs.msg import PointStamped
+from geometry_msgs.msg import PointStamped, Twist
 
 
 class PerceptionNode(Node):
@@ -38,9 +38,11 @@ class PerceptionNode(Node):
         # Obstacle detection threshold (m) – configurable via ROS parameter.
         self.declare_parameter('obstacle_threshold', 1.0)
 
-        from geometry_msgs.msg import PointStamped
         self._obstacle_pub = self.create_publisher(
             PointStamped, '/obstacles', 10
+        )
+        self._tank_cmd_pub = self.create_publisher(
+            Twist, '/tank_cmd', 10
         )
 
         self._scan_sub = self.create_subscription(
@@ -50,7 +52,7 @@ class PerceptionNode(Node):
         self.get_logger().info('Perception node started.')
 
     def _scan_callback(self, msg: LaserScan) -> None:
-        """Detect the closest obstacle within the threshold distance."""
+        """Detect the closest obstacle within the threshold distance and publish tank_cmd."""
         threshold = self.get_parameter('obstacle_threshold').value
 
         min_range = float('inf')
@@ -62,6 +64,11 @@ class PerceptionNode(Node):
                 min_index = i
 
         if min_index == -1 or min_range > threshold:
+            # No obstacle: drive forward
+            tank_cmd = Twist()
+            tank_cmd.linear.x = 1.0  # left wheel velocity
+            tank_cmd.linear.y = 1.0  # right wheel velocity
+            self._tank_cmd_pub.publish(tank_cmd)
             return
 
         bearing = msg.angle_min + min_index * msg.angle_increment
@@ -79,6 +86,22 @@ class PerceptionNode(Node):
             f'Obstacle detected: distance={min_range:.2f} m, '
             f'bearing={math.degrees(bearing):.1f} deg'
         )
+
+        # Obstacle detected: stop or turn
+        tank_cmd = Twist()
+        if abs(bearing) < math.radians(20):
+            # Obstacle ahead: stop
+            tank_cmd.linear.x = 0.0
+            tank_cmd.linear.y = 0.0
+        elif bearing > 0:
+            # Obstacle left: turn right
+            tank_cmd.linear.x = 0.5
+            tank_cmd.linear.y = 1.0
+        else:
+            # Obstacle right: turn left
+            tank_cmd.linear.x = 1.0
+            tank_cmd.linear.y = 0.5
+        self._tank_cmd_pub.publish(tank_cmd)
 
 
 def main(args=None):

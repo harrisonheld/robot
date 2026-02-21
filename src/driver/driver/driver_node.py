@@ -19,17 +19,17 @@ from geometry_msgs.msg import Twist
 
 
 class DriverNode(Node):
-    """Translate high-level Ackermann commands into actuator commands.
+    """Translate tank drive commands into actuator commands.
 
     Subscriptions
     -------------
-    /ackermann_cmd : ackermann_msgs/AckermannDriveStamped
-        Desired steering angle (rad) and speed (m/s) from the planning layer.
+    /tank_cmd : geometry_msgs/Twist
+        Desired left and right wheel velocities (m/s) from the planning layer.
 
     Publications
     ------------
     /cmd_vel : geometry_msgs/Twist
-        Velocity command forwarded to the Gazebo differential/Ackermann plugin.
+        Velocity command forwarded to the Gazebo differential drive plugin.
     """
 
     def __init__(self):
@@ -37,49 +37,37 @@ class DriverNode(Node):
 
         # Maximum allowable speed (m/s) – configurable via ROS parameter.
         self.declare_parameter('max_speed', 2.0)
-        # Maximum steering angle (rad) – configurable via ROS parameter.
-        self.declare_parameter('max_steering_angle', 0.5)
-        # Wheel base (m) used for Ackermann → differential conversion.
-        self.declare_parameter('wheelbase', 0.3)
+        # Track width (m) used for tank drive conversion.
+        self.declare_parameter('track_width', 0.2)
 
         self._cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)
 
-        self._ackermann_sub = self.create_subscription(
-            AckermannDriveStamped,
-            '/ackermann_cmd',
-            self._ackermann_callback,
+        self._tank_sub = self.create_subscription(
+            Twist,
+            '/tank_cmd',
+            self._tank_callback,
             10,
         )
 
-        self.get_logger().info('Driver node started.')
+        self.get_logger().info('Driver node started (tank drive).')
 
-    def _ackermann_callback(self, msg: AckermannDriveStamped) -> None:
-        """Convert an Ackermann command to a Twist and publish it."""
+    def _tank_callback(self, msg: Twist) -> None:
+        """Convert tank drive left/right velocities to Twist and publish."""
         max_speed = self.get_parameter('max_speed').value
-        max_steering = self.get_parameter('max_steering_angle').value
-        wheelbase = self.get_parameter('wheelbase').value
+        track_width = self.get_parameter('track_width').value
 
-        speed = float(
-            max(-max_speed, min(max_speed, msg.drive.speed))
-        )
-        steering_angle = float(
-            max(-max_steering, min(max_steering, msg.drive.steering_angle))
-        )
+        # Expect left velocity in msg.linear.x, right velocity in msg.linear.y
+        left_vel = float(max(-max_speed, min(max_speed, msg.linear.x)))
+        right_vel = float(max(-max_speed, min(max_speed, msg.linear.y)))
 
+        self.get_logger().debug(f"Received tank_cmd: left={left_vel}, right={right_vel}")
+
+        # Tank drive: linear.x = (left + right) / 2, angular.z = (right - left) / track_width
         twist = Twist()
-        twist.linear.x = speed
+        twist.linear.x = (left_vel + right_vel) / 2.0
+        twist.angular.z = (right_vel - left_vel) / track_width
 
-        # Approximate angular velocity from steering angle using bicycle model:
-        #   turning_radius = wheelbase / tan(steering_angle)
-        if abs(steering_angle) > 1e-6 and abs(wheelbase) > 1e-6:
-            turning_radius = wheelbase / math.tan(abs(steering_angle))
-            angular_z = speed / turning_radius
-            if steering_angle < 0:
-                angular_z = -angular_z
-        else:
-            angular_z = 0.0
-
-        twist.angular.z = angular_z
+        self.get_logger().debug(f"Publishing cmd_vel: linear.x={twist.linear.x}, angular.z={twist.angular.z}")
 
         self._cmd_vel_pub.publish(twist)
 

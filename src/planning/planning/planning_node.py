@@ -39,9 +39,9 @@ class PlanningNode(Node):
         super().__init__('planning_node')
 
         # Cruise speed (m/s) when no obstacle is present.
-        self.declare_parameter('cruise_speed', 1.0)
+        self.declare_parameter('cruise_speed', 20.0)
         # Distance at which obstacle avoidance kicks in (m).
-        self.declare_parameter('safety_distance', 0.8)
+        self.declare_parameter('safety_distance', 3.0)
         # Maximum steering angle used during avoidance (rad).
         self.declare_parameter('max_avoidance_steering', 0.4)
         # Timer period (s) for the control loop.
