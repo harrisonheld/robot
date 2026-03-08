@@ -193,7 +193,7 @@
     <parent link="chassis"/>
     <child  link="lidar_link"/>
     <!-- Mount the LiDAR on top of the chassis, towards the front. -->
-    <origin xyz="${wheelbase*0.6} 0 ${body_height + 0.03}" rpy="0 0 0"/>
+    <origin xyz="${wheelbase*0.6} 0 ${body_height + 0.06}" rpy="0 0 0"/>
   </joint>
 
   <!-- ================================================================== -->
