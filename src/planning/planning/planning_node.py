@@ -39,13 +39,15 @@ class PlanningNode(Node):
         super().__init__('planning_node')
 
         # Cruise speed (m/s) when no obstacle is present.
-        self.declare_parameter('cruise_speed', 0.5)
+        self.declare_parameter('cruise_speed', 1.0)
         # Distance at which obstacle avoidance kicks in (m).
-        self.declare_parameter('safety_distance', 2.0)
+        self.declare_parameter('safety_distance', 8.0)
         # Maximum steering angle used during avoidance (rad).
         self.declare_parameter('max_avoidance_steering', 0.4)
         # Timer period (s) for the control loop.
         self.declare_parameter('control_period', 0.05)
+        # Maximum age (s) of obstacle data before it is considered stale.
+        self.declare_parameter('obstacle_timeout', 0.25)
 
         self._cmd_pub = self.create_publisher(
             AckermannDriveStamped, '/ackermann_cmd', 10
@@ -57,6 +59,7 @@ class PlanningNode(Node):
 
         # Latest obstacle info: (distance, bearing).  None = no obstacle.
         self._latest_obstacle = None
+        self._latest_obstacle_time = None
 
         control_period = self.get_parameter('control_period').value
         self._timer = self.create_timer(control_period, self._control_loop)
@@ -68,17 +71,26 @@ class PlanningNode(Node):
         distance = msg.point.x
         bearing = msg.point.y
         self._latest_obstacle = (distance, bearing)
+        self._latest_obstacle_time = self.get_clock().now().nanoseconds * 1e-9
 
     def _control_loop(self) -> None:
         """Publish a drive command on every timer tick."""
         cruise_speed = self.get_parameter('cruise_speed').value
         safety_distance = self.get_parameter('safety_distance').value
         max_steering = self.get_parameter('max_avoidance_steering').value
+        obstacle_timeout = self.get_parameter('obstacle_timeout').value
+        now = self.get_clock().now().nanoseconds * 1e-9
 
         speed = cruise_speed
         steering_angle = 0.0
 
-        if self._latest_obstacle is not None:
+        obstacle_is_fresh = (
+            self._latest_obstacle is not None
+            and self._latest_obstacle_time is not None
+            and (now - self._latest_obstacle_time) <= obstacle_timeout
+        )
+
+        if obstacle_is_fresh:
             distance, bearing = self._latest_obstacle
             if distance < safety_distance and distance > 0.0:
                 # Steer away proportionally to proximity; negative bearing →
@@ -89,10 +101,6 @@ class PlanningNode(Node):
                 )
                 # Slow down proportionally to proximity.
                 speed = cruise_speed * (distance / safety_distance)
-
-            # Clear the obstacle after consuming it; fresh data will arrive
-            # on the next scan cycle.
-            self._latest_obstacle = None
 
         cmd = AckermannDriveStamped()
         cmd.header.stamp = self.get_clock().now().to_msg()
