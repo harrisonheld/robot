@@ -4,7 +4,7 @@ Starts:
 - Gazebo with the rc_car_world scene.
 - robot_state_publisher with the xacro-processed URDF.
 - The state_estimation node.
-- The perception node.
+- The lidar_perception node.
 - The camera_perception node.
 - The planning node.
 - The driver node.
@@ -160,10 +160,10 @@ def generate_launch_description():
         parameters=[{'use_sim_time': use_sim_time}],
     )
 
-    perception_node = Node(
+    lidar_perception_node = Node(
         package='perception',
-        executable='perception_node',
-        name='perception_node',
+        executable='lidar_perception_node',
+        name='lidar_perception_node',
         output='screen',
         parameters=[{'use_sim_time': use_sim_time}],
     )
@@ -214,7 +214,7 @@ def generate_launch_description():
         ros_gz_bridge,
         static_tf_lidar,
         state_estimation_node,
-        perception_node,
+        lidar_perception_node,
         camera_perception_node,
         planning_node,
         driver_node,

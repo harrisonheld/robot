@@ -16,7 +16,7 @@ from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import PointStamped
 
 
-class PerceptionNode(Node):
+class LidarPerceptionNode(Node):
     """Detect obstacles from LiDAR scans.
 
     Subscriptions
@@ -33,7 +33,7 @@ class PerceptionNode(Node):
     """
 
     def __init__(self):
-        super().__init__('perception_node')
+        super().__init__('lidar_perception_node')
 
         # Obstacle detection threshold (m) – configurable via ROS parameter.
         self.declare_parameter('obstacle_threshold', 1.0)
@@ -84,7 +84,7 @@ class PerceptionNode(Node):
 def main(args=None):
     """Entry point for the perception node."""
     rclpy.init(args=args)
-    node = PerceptionNode()
+    node = LidarPerceptionNode()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
